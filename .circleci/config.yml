@@ -25,6 +25,8 @@ jobs:
              export DEPENDS=cython numpy matplotlib h5py nibabel cvxpy tqdm && \
              export VENV_ARGS=--python=python && \
              export EXTRA_DEPENDS=scipy && \
+             yum groupinstall "Development Tools" -y && \
+             yum install man-pages -y && \
              ./tools/ci/install_dependencies.sh && \
              ./tools/ci/install.sh && \
              ./tools/ci/run_tests.sh'
