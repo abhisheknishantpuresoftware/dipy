@@ -1,0 +1,41 @@
+version: 2.1
+
+jobs:
+  wheel for manylinux_aarch64_wheel:
+    parameters:
+      python_version:
+        type: string
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
+    working_directory: ~/dipy
+
+    steps:
+      - checkout
+      - run:
+          name: Wheel Making
+          command: |
+             docker run -v $(pwd):"/home/source_root":rw,z \
+             -e $(id -u) \
+             "quay.io/pypa/manylinux2014_aarch64:latest" \
+             bash -exc 'cd /home/source_root;
+             /opt/python/<< parameters.python_version >>/bin/python -m venv .env && \
+             source .env/bin/activate && \
+             export INSTALL_TYPE=wheel && \
+             export DEPENDS=cython numpy matplotlib h5py nibabel cvxpy tqdm && \
+             export VENV_ARGS=--python=python && \
+             export EXTRA_DEPENDS=scipy && \
+             ./tools/ci/install_dependencies.sh && \
+             ./tools/ci/install.sh && \
+             ./tools/ci/run_tests.sh'
+workflows:
+  version: 2
+  build_wheel:
+    jobs: 
+      - wheel for manylinux_aarch64_wheel:
+           matrix:
+            parameters:
+              python_version:
+                - "cp37-cp37m"
+                - "cp38-cp38"
+                - "cp39-cp39"
